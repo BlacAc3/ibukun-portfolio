@@ -5,7 +5,7 @@ export function Collaborate() {
   return (
     <section className="section bg-paper text-plum-ink">
       <div className="shell">
-        <Folio n="07" label="Collaborations" className="text-plum/80 [--folio-accent:#7d5f1c]" />
+        <Folio n="07" label="Collaborations" className="text-plum/80 [--folio-accent:#6f4a92]" />
         <div className="mt-12 grid grid-cols-1 gap-14 md:mt-16 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-20">
           <div>
             <h2 className="display text-[clamp(2.4rem,5.4vw,4.6rem)] text-plum">
@@ -27,7 +27,7 @@ export function Collaborate() {
             </ul>
           </div>
           <Reveal as="figure" delay={0.15} className="self-center">
-            <div className="relative bg-plum px-7 py-10 text-cream shadow-[0_30px_60px_-30px_rgba(46,26,46,0.6)] sm:px-10 sm:py-12">
+            <div className="relative bg-plum px-7 py-10 text-cream shadow-[0_30px_60px_-30px_rgba(43,26,59,0.6)] sm:px-10 sm:py-12">
               <span aria-hidden className="display absolute -top-6 left-6 text-7xl leading-none text-gold-soft">
                 “
               </span>

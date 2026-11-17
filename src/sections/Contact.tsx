@@ -11,7 +11,7 @@ export function Contact() {
     <section id="contact" className="relative overflow-hidden bg-plum text-cream">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-[radial-gradient(ellipse_at_50%_100%,rgba(201,169,221,0.28),transparent_65%)]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-[radial-gradient(ellipse_at_50%_100%,rgba(198,175,230,0.28),transparent_65%)]"
       />
       <div className="shell relative pt-[var(--section-y)] pb-16">
         <Folio n="08" label="Contact" className="text-cream/70" />

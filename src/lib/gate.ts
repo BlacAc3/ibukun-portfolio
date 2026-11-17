@@ -1,5 +1,5 @@
 /**
- * A quiet fade-through for route changes and long in-page jumps, so nothing
+ * A quick plum curtain for route changes and long in-page jumps, so nothing
  * scroll-driven (the magazine) is ever fast-forwarded in front of the reader.
  */
 let el: HTMLDivElement | null = null
@@ -21,9 +21,9 @@ function build() {
 async function out(g: HTMLDivElement) {
   await frame()
   await frame()
-  await wait(110)
+  await wait(40)
   g.dataset.state = 'out'
-  await wait(640)
+  await wait(480)
   g.dataset.state = ''
 }
 
@@ -58,7 +58,7 @@ export async function gate(work: () => void, hold?: Promise<void>) {
   g.dataset.state = ''
   void g.offsetWidth
   g.dataset.state = 'in'
-  await wait(400)
+  await wait(350)
   work()
   if (hold) await hold
   await out(g)
@@ -71,7 +71,7 @@ export async function reveal() {
   busy = true
   const g = build()
   g.dataset.state = 'cover'
-  await wait(120)
+  await wait(60)
   await out(g)
   busy = false
 }

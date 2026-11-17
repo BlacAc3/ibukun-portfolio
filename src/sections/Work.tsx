@@ -213,7 +213,7 @@ export function Work() {
             {/* warm pool of light the magazine sits in */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,rgba(226,201,138,0.16),transparent_60%)]"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,rgba(232,214,185,0.16),transparent_60%)]"
             />
             <LazyScene
               eager

@@ -13,7 +13,7 @@ function StaticPolaroids() {
   return (
     <div className="grid h-full grid-cols-2 place-content-center gap-5 p-4">
       {polaroids.map((p, i) => (
-        <figure key={p.src} className={`${tilt[i]} bg-[#fbf7ef] p-2.5 pb-3 shadow-[0_18px_40px_-16px_rgba(46,26,46,0.5)]`}>
+        <figure key={p.src} className={`${tilt[i]} bg-[#fbf7ef] p-2.5 pb-3 shadow-[0_18px_40px_-16px_rgba(43,26,59,0.5)]`}>
           <img src={p.src} alt="" loading="lazy" className="aspect-square w-full object-cover object-[50%_22%]" />
           <figcaption className="mt-2 text-center text-sm italic text-plum">{p.caption}</figcaption>
         </figure>
@@ -30,7 +30,7 @@ export function About() {
   return (
     <section id="about" ref={ref} className="section relative bg-paper text-plum-ink">
       <div className="shell">
-        <Folio n="01" label="About" className="text-plum/80 [--folio-accent:#7d5f1c]" />
+        <Folio n="01" label="About" className="text-plum/80 [--folio-accent:#6f4a92]" />
         <div className="mt-12 grid grid-cols-1 gap-12 md:mt-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:gap-16">
           <div className="max-w-[36rem]">
             <h2 className="display text-[clamp(2.6rem,6.4vw,5.4rem)] text-plum">

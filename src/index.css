@@ -1,22 +1,23 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-plum: #5a3b57;
-  --color-plum-deep: #2e1a2e;
-  --color-plum-ink: #1f1220;
+  --color-plum: #54366a;
+  --color-plum-deep: #2b1a3b;
+  --color-plum-ink: #1c1028;
   --color-cream: #f3ebdd;
   --color-paper: #faf5ec;
   --color-latte: #efe2c8;
-  --color-lilac: #c9a9dd;
-  --color-lavender: #ede3f2;
-  --color-gold: #c9a24a;
-  --color-gold-soft: #e2c98a;
+  --color-lilac: #c6afe6;
+  --color-lavender: #ece4f6;
+  --color-gold: #b89a74;
+  --color-gold-soft: #e8d6b9;
 
   --font-display: 'Archivo', 'Arial Black', system-ui, sans-serif;
   --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
 
   --ease-page: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-silk: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-curtain: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 :root {
@@ -321,7 +322,7 @@
   inset: 0;
   z-index: 59;
   background:
-    radial-gradient(ellipse 120% 95% at 50% 45%, transparent 58%, rgba(31, 18, 32, 0.2) 100%),
+    radial-gradient(ellipse 120% 95% at 50% 45%, transparent 58%, rgba(28, 16, 40, 0.2) 100%),
     linear-gradient(rgba(226, 190, 128, 0.05), rgba(226, 190, 128, 0.05));
   mix-blend-mode: multiply;
 }
@@ -338,15 +339,21 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: scale(1.055);
-  transform-origin: 50% 50%;
+  /* Rests below the fold; slides up over the page, then lifts off the top.
+     Gold hairlines on both edges and a soft shadow make it read as a sheet
+     passing over the page, even over the plum sections. */
+  transform: translate3d(0, 101%, 0);
+  border-block: 1px solid rgba(232, 214, 185, 0.7);
+  box-shadow:
+    0 -24px 60px rgba(20, 10, 20, 0.35),
+    0 24px 60px rgba(20, 10, 20, 0.35);
   background:
     linear-gradient(180deg, rgba(243, 235, 221, 0.035), rgba(243, 235, 221, 0) 38%),
     radial-gradient(ellipse 132% 100% at 50% 40%,
-      #3b2440 0%,
+      #3c2554 0%,
       var(--color-plum-deep) 58%,
-      #241526 100%);
-  will-change: opacity, transform;
+      #221431 100%);
+  will-change: transform;
 }
 /* The veil carries its own faint grain so the dark field never reads as flat
    digital fill — it stays part of the printed page. */
@@ -365,7 +372,7 @@
   position: absolute;
   inset: 0;
   background: radial-gradient(ellipse 62% 48% at 50% 46%,
-    rgba(201, 162, 74, 0.14),
+    rgba(184, 154, 116, 0.14),
     transparent 72%);
   opacity: 0;
   transition: opacity 0.5s var(--ease-page);
@@ -374,34 +381,62 @@
   visibility: visible;
   pointer-events: auto;
   opacity: 1;
-  transform: scale(1);
-  transition:
-    opacity 0.34s var(--ease-silk),
-    transform 0.56s var(--ease-silk);
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.36s var(--ease-curtain);
 }
-.page-fade[data-state='in']::after {
+.page-fade[data-state='in']::after,
+.page-fade[data-state='cover']::after {
   opacity: 1;
-  transition-delay: 0.1s;
 }
 .page-fade[data-state='cover'] {
   visibility: visible;
   pointer-events: auto;
   opacity: 1;
-  transform: scale(1);
+  transform: translate3d(0, 0, 0);
 }
 .page-fade[data-state='out'] {
   visibility: visible;
-  opacity: 0;
-  transform: scale(1.018);
-  transition:
-    opacity 0.62s var(--ease-page),
-    transform 0.8s var(--ease-page);
+  opacity: 1;
+  transform: translate3d(0, -101%, 0);
+  transition: transform 0.48s var(--ease-curtain);
 }
 @media (prefers-reduced-motion: reduce) {
   .page-fade,
   .page-fade[data-state='in'],
   .page-fade[data-state='cover'],
   .page-fade[data-state='out'] {
-    transform: none;
+    transition: none;
+  }
+}
+
+/* Hero idle motion: one slow, sine-eased breath, shared by both title copies
+   so the outline stays registered. Enough travel that it never crawls at
+   sub-pixel speed (that is what reads as stepping), and a hair of rotation so
+   Chrome keeps the layer on the GPU with sub-pixel positioning instead of
+   snapping it to whole pixels each frame. */
+.hero-float,
+.hero-drift {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0) rotate(0.01deg);
+}
+.hero-float {
+  animation: hero-float 6.5s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+.hero-drift {
+  animation: hero-drift 6.5s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+@keyframes hero-float {
+  from { transform: translate3d(0, 0, 0) rotate(0.01deg); }
+  to { transform: translate3d(0, -16px, 0) rotate(0.01deg); }
+}
+@keyframes hero-drift {
+  from { transform: translate3d(0, 0, 0) rotate(0.01deg); }
+  to { transform: translate3d(0, 10px, 0) rotate(0.01deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-float,
+  .hero-drift {
+    animation: none;
   }
 }

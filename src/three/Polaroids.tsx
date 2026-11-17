@@ -26,7 +26,7 @@ async function makePolaroidTexture(shot: Shot) {
   const pad = 34
   drawCover(ctx, img, pad, pad, cw - pad * 2, cw - pad * 2, 0.22)
   // a whisper of warm fade, like an old print
-  ctx.fillStyle = 'rgba(201,162,74,0.08)'
+  ctx.fillStyle = 'rgba(184,154,116,0.08)'
   ctx.fillRect(pad, pad, cw - pad * 2, cw - pad * 2)
   ctx.fillStyle = '#3b2238'
   ctx.font = 'italic 400 40px Fraunces'
@@ -180,7 +180,7 @@ export default function Polaroids({
     >
       <ambientLight intensity={1.1} color="#fff3e6" />
       <directionalLight position={[2.5, 3, 4]} intensity={1.6} color="#ffe2b8" castShadow shadow-bias={-0.0004} shadow-normalBias={0.03} />
-      <directionalLight position={[-3, -1, 2]} intensity={0.5} color="#c9a9dd" />
+      <directionalLight position={[-3, -1, 2]} intensity={0.5} color="#c6afe6" />
       <Layout shots={shots} scroll={scroll} compact={compact} />
     </Canvas>
   )

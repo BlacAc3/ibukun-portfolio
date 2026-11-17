@@ -35,7 +35,7 @@ export default function ProjectPage() {
       <header className="relative overflow-hidden bg-plum pt-28 pb-16 text-cream md:pt-36 md:pb-24">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[80%] bg-[radial-gradient(ellipse_at_50%_100%,rgba(201,169,221,0.26),transparent_65%)]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[80%] bg-[radial-gradient(ellipse_at_50%_100%,rgba(198,175,230,0.26),transparent_65%)]"
         />
         <div className="shell relative">
           <Link to="/#work" className="kicker inline-flex min-h-11 items-center gap-2 text-cream/70 transition-colors hover:text-gold-soft">

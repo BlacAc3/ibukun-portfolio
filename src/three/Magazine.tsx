@@ -222,12 +222,12 @@ function Book({
       {/* inside back cover, always on the right */}
       <mesh position={[W / 2, 0, 0]} receiveShadow>
         <boxGeometry args={[W, H, T]} />
-        <meshStandardMaterial attach="material-0" color="#2e1a2e" />
-        <meshStandardMaterial attach="material-1" color="#2e1a2e" />
-        <meshStandardMaterial attach="material-2" color="#2e1a2e" />
-        <meshStandardMaterial attach="material-3" color="#2e1a2e" />
+        <meshStandardMaterial attach="material-0" color="#2b1a3b" />
+        <meshStandardMaterial attach="material-1" color="#2b1a3b" />
+        <meshStandardMaterial attach="material-2" color="#2b1a3b" />
+        <meshStandardMaterial attach="material-3" color="#2b1a3b" />
         <meshStandardMaterial attach="material-4" map={backBoard} roughness={0.7} />
-        <meshStandardMaterial attach="material-5" color="#2e1a2e" />
+        <meshStandardMaterial attach="material-5" color="#2b1a3b" />
       </mesh>
     </group>
   )
@@ -295,7 +295,7 @@ export default function Magazine({
     >
       <ambientLight intensity={1.05} color="#fff1e2" />
       <directionalLight position={[1.5, 2.5, 4]} intensity={1.7} color="#ffe0b3" castShadow shadow-bias={-0.0004} shadow-normalBias={0.03} />
-      <directionalLight position={[-3, 1, 2]} intensity={0.45} color="#c9a9dd" />
+      <directionalLight position={[-3, 1, 2]} intensity={0.45} color="#c6afe6" />
       {mag && <Book leaves={mag.leaves} backBoard={mag.backBoard} scroll={scroll} onOpen={onOpen} onSpread={onSpread} />}
     </Canvas>
   )

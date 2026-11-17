@@ -17,11 +17,11 @@ export function OneSip() {
         className="pointer-events-none absolute -left-[30%] -top-[30%] h-[110%] w-[110%] bg-[radial-gradient(closest-side,rgba(255,250,238,0.75),rgba(255,250,238,0.25)_55%,transparent)]"
       />
       <div className="shell relative">
-        <Folio n="04" label="My own magazine" className="text-plum/80 [--folio-accent:#7d5f1c]" />
+        <Folio n="04" label="My own magazine" className="text-plum/80 [--folio-accent:#6f4a92]" />
         <div className="mt-10 grid grid-cols-1 items-center gap-8 md:mt-14 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-16">
           <div className="relative order-2 md:order-1">
             <LazyScene
-              className="relative aspect-square w-full"
+              className="relative aspect-square w-full max-md:overflow-visible"
               fallback={
                 <img
                   src={photos.mustard}
@@ -37,7 +37,7 @@ export function OneSip() {
             <Reveal
               as="figure"
               delay={0.2}
-              className="absolute -bottom-4 right-0 w-[38%] max-w-[13rem] rotate-[4deg] bg-[#fbf7ef] p-2 pb-8 shadow-[0_24px_50px_-20px_rgba(46,26,46,0.55)] sm:-bottom-6 sm:right-2"
+              className="absolute -bottom-4 right-0 w-[38%] max-w-[13rem] rotate-[4deg] bg-[#fbf7ef] p-2 pb-8 shadow-[0_24px_50px_-20px_rgba(43,26,59,0.55)] sm:-bottom-6 sm:right-2"
             >
               <img
                 src={photos.mustard}
@@ -51,7 +51,8 @@ export function OneSip() {
             </Reveal>
           </div>
 
-          <div className="order-1 max-w-xl md:order-2">
+          {/* on phones the cup's steam rises up behind this column, so it sits above */}
+          <div className="relative z-10 order-1 max-w-xl md:static md:z-auto md:order-2">
             <p className="serif-lede text-[1.4rem] italic text-plum">Issue by issue, café by café</p>
             <h2 className="display mt-4 text-[clamp(2.8rem,7vw,6rem)] text-plum">
               <MaskLines lines={['One sip', 'at a time']} />

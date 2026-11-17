@@ -6,15 +6,15 @@ export const PW = 900
 export const PH = 1222
 
 const C = {
-  plum: '#5a3b57',
-  deep: '#2e1a2e',
+  plum: '#54366a',
+  deep: '#2b1a3b',
   cream: '#f3ebdd',
   paper: '#faf5ec',
-  lilac: '#d9c3e6',
-  lavender: '#ede3f2',
-  gold: '#c9a24a',
-  goldSoft: '#ead6a0',
-  ink: '#2b1a2a',
+  lilac: '#dccdef',
+  lavender: '#ece4f6',
+  gold: '#b89a74',
+  goldSoft: '#ebdcc2',
+  ink: '#241632',
 }
 
 const toneBg: Record<Project['tone'], string> = {
@@ -64,8 +64,8 @@ function spineShade(ctx: CanvasRenderingContext2D, side: 'left' | 'right') {
   const g = side === 'right'
     ? ctx.createLinearGradient(0, 0, 90, 0)
     : ctx.createLinearGradient(PW, 0, PW - 90, 0)
-  g.addColorStop(0, 'rgba(40,20,40,0.22)')
-  g.addColorStop(1, 'rgba(40,20,40,0)')
+  g.addColorStop(0, 'rgba(36,20,52,0.22)')
+  g.addColorStop(1, 'rgba(36,20,52,0)')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, PW, PH)
 }

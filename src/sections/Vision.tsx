@@ -12,7 +12,7 @@ export function Vision() {
         “
       </span>
       <div className="shell relative">
-        <Folio n="06" label="What I believe" className="text-plum/80 [--folio-accent:#7d5f1c]" />
+        <Folio n="06" label="What I believe" className="text-plum/80 [--folio-accent:#6f4a92]" />
         <Reveal as="figure" className="mt-12 max-w-5xl md:mt-16">
           <blockquote className="serif-lede text-[clamp(1.85rem,4.2vw,3.6rem)] text-plum">
             {profile.belief}
@@ -32,7 +32,7 @@ export function Vision() {
             <ol className="mt-5 space-y-4 text-[1.08rem]">
               {profile.mission.map((m, i) => (
                 <li key={m} className="grid grid-cols-[2rem_1fr] gap-2 border-b border-plum/12 pb-4">
-                  <span className="kicker pt-1.5 text-[#7d5f1c]">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="kicker pt-1.5 text-[#6f4a92]">{String(i + 1).padStart(2, '0')}</span>
                   <span>{m}</span>
                 </li>
               ))}
