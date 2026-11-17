@@ -397,15 +397,18 @@
 }
 
 /* Hero idle motion: one slow, sine-eased breath, shared by both title copies
-   so the outline stays registered. Enough travel that it never crawls at
-   sub-pixel speed (that is what reads as stepping), and a hair of rotation so
-   Chrome keeps the layer on the GPU with sub-pixel positioning instead of
-   snapping it to whole pixels each frame. */
+   so the outline stays registered.
+   The scale(1.004) is load-bearing. With a pure translate, Chromium snaps the
+   layer to whole device pixels, so a slow drift dwells on a pixel then jumps:
+   ~3 visible steps a second, which reads as low-fps video. Any non-trivial
+   scale makes the compositor sample the layer at sub-pixel positions instead.
+   (0.4% is invisible; rotate(0.01deg) is too small, Chromium ignores it.) */
 .hero-float,
 .hero-drift {
   will-change: transform;
   backface-visibility: hidden;
-  transform: translate3d(0, 0, 0) rotate(0.01deg);
+  transform-origin: 50% 0;
+  transform: translate3d(0, 0, 0) scale(1.004);
 }
 .hero-float {
   animation: hero-float 6.5s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
@@ -414,13 +417,14 @@
   animation: hero-drift 6.5s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
 }
 @keyframes hero-float {
-  from { transform: translate3d(0, 0, 0) rotate(0.01deg); }
-  to { transform: translate3d(0, -16px, 0) rotate(0.01deg); }
+  from { transform: translate3d(0, 0, 0) scale(1.004); }
+  to { transform: translate3d(0, -16px, 0) scale(1.004); }
 }
 @keyframes hero-drift {
-  from { transform: translate3d(0, 0, 0) rotate(0.01deg); }
-  to { transform: translate3d(0, 10px, 0) rotate(0.01deg); }
+  from { transform: translate3d(0, 0, 0) scale(1.004); }
+  to { transform: translate3d(0, 10px, 0) scale(1.004); }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .hero-float,
   .hero-drift {

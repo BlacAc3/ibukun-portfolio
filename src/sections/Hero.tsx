@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { profile } from '../data/profile'
 import { photos } from '../data/photos'
@@ -35,6 +35,70 @@ function Title({ outline = false, reduce }: { outline?: boolean; reduce: boolean
 }
 
 /**
+ * True while a mouse is over her silhouette, not just the image's box.
+ * The cutout is drawn once into a small canvas and its alpha is sampled at the
+ * cursor, so the transparent corners around her never count as "on" her.
+ */
+function useOverCutout(section: RefObject<HTMLElement | null>, img: RefObject<HTMLImageElement | null>) {
+  const [over, setOver] = useState(false)
+  useEffect(() => {
+    const el = section.current
+    if (!el || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    let mask: { data: Uint8ClampedArray; w: number; h: number } | null = null
+    const build = () => {
+      const im = img.current
+      if (!im || !im.complete || !im.naturalWidth) return
+      const w = 160
+      const h = Math.round((w * im.naturalHeight) / im.naturalWidth)
+      const c = document.createElement('canvas')
+      c.width = w
+      c.height = h
+      const ctx = c.getContext('2d', { willReadFrequently: true })
+      if (!ctx) return
+      ctx.drawImage(im, 0, 0, w, h)
+      try {
+        mask = { data: ctx.getImageData(0, 0, w, h).data, w, h }
+      } catch {
+        mask = null
+      }
+    }
+    let raf = 0
+    let last = false
+    const test = (x: number, y: number) => {
+      const im = img.current
+      if (!im) return false
+      if (!mask) build()
+      const r = im.getBoundingClientRect()
+      if (x < r.left || x > r.right || y < r.top || y > r.bottom) return false
+      if (!mask) return true // no alpha available: fall back to the box
+      const mx = Math.min(mask.w - 1, Math.floor(((x - r.left) / r.width) * mask.w))
+      const my = Math.min(mask.h - 1, Math.floor(((y - r.top) / r.height) * mask.h))
+      return mask.data[(my * mask.w + mx) * 4 + 3] > 96
+    }
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        const now = test(e.clientX, e.clientY)
+        if (now !== last) setOver((last = now))
+      })
+    }
+    const onLeave = () => {
+      cancelAnimationFrame(raf)
+      if (last) setOver((last = false))
+    }
+    el.addEventListener('pointermove', onMove, { passive: true })
+    el.addEventListener('pointerleave', onLeave)
+    return () => {
+      cancelAnimationFrame(raf)
+      el.removeEventListener('pointermove', onMove)
+      el.removeEventListener('pointerleave', onLeave)
+    }
+  }, [section, img])
+  return over
+}
+
+/**
  * Her own cover, rebuilt: the name in heavy cream caps behind her,
  * and an outline copy of the same words on top where they cross her.
  * Scrolling away pulls the layers apart for a little depth.
@@ -42,6 +106,9 @@ function Title({ outline = false, reduce }: { outline?: boolean; reduce: boolean
 export function Hero() {
   const reduce = useReducedMotion()
   const ref = useRef<HTMLElement>(null)
+  const photo = useRef<HTMLImageElement>(null)
+  // Hover her and she steps out in front of the title; leave and the cover settles back.
+  const over = useOverCutout(ref, photo)
 
   // scroll-out depth
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
@@ -54,7 +121,8 @@ export function Hero() {
     <section
       ref={ref}
       id="top"
-      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-plum"
+      data-over={over || undefined}
+      className="group/hero relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-plum"
     >
       {/* soft light behind her, like a studio backdrop */}
       <div
@@ -72,7 +140,9 @@ export function Hero() {
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex origin-bottom justify-center"
       >
         <div className="hero-float">
+          <div className="origin-bottom transition-[transform,filter] duration-[900ms] ease-[var(--ease-page)] group-data-[over]/hero:scale-[1.025] group-data-[over]/hero:[filter:brightness(1.05)_drop-shadow(0_24px_48px_rgba(28,16,40,0.45))]">
           <motion.img
+            ref={photo}
             src={photos.cutout}
             alt="Ibukun smiling, in a pale-blue tweed dress with pearl trim"
             fetchPriority="high"
@@ -81,6 +151,7 @@ export function Hero() {
             transition={{ duration: 1.5, delay: 0.35, ease }}
             className="h-[84svh] max-h-[1000px] w-auto max-w-none object-contain object-bottom sm:h-[94svh]"
           />
+          </div>
         </div>
       </motion.div>
 
@@ -105,7 +176,10 @@ export function Hero() {
 
       <div className="relative flex flex-1 items-start justify-center pt-[8.5svh] sm:pt-[4vh]">
         {/* layer 1: solid words */}
-        <motion.div style={{ y: titleY }} className="relative z-0 px-1 sm:px-2 lg:w-full lg:px-[var(--gutter)]">
+        <motion.div
+          style={{ y: titleY }}
+          className="relative z-0 px-1 transition-opacity duration-700 ease-[var(--ease-page)] group-data-[over]/hero:opacity-80 sm:px-2 lg:w-full lg:px-[var(--gutter)]"
+        >
           <div className="hero-drift">
             <Title reduce={reduce} />
           </div>
@@ -117,8 +191,12 @@ export function Hero() {
           style={{ y: titleY }}
           className="pointer-events-none absolute inset-x-0 top-[8.5svh] z-20 px-1 sm:top-[4vh] sm:px-2 lg:px-[var(--gutter)]"
         >
+          {/* Fade only: the outline must stay registered on the solid words, or the
+              gap between them shows as a doubled ghost while it fades. */}
+          <div className="transition-opacity duration-[450ms] ease-[var(--ease-silk)] group-data-[over]/hero:opacity-0">
           <div className="hero-drift">
             <Title outline reduce={reduce} />
+          </div>
           </div>
         </motion.div>
 
