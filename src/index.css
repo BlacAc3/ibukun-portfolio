@@ -247,6 +247,12 @@
 }
 
 /* Ticker of her titles between the cover and the first page */
+/* Instagram embed loading hairline */
+@keyframes ig-load {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+
 @keyframes ticker {
   to {
     transform: translate3d(-50%, 0, 0);

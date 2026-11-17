@@ -35,15 +35,18 @@ function Title({ outline = false, reduce }: { outline?: boolean; reduce: boolean
 }
 
 /**
- * True while a mouse is over her silhouette, not just the image's box.
- * The cutout is drawn once into a small canvas and its alpha is sampled at the
- * cursor, so the transparent corners around her never count as "on" her.
+ * Whether she is stepped out in front of the title.
+ * - Mouse devices: true while the cursor is over her silhouette.
+ * - Touch devices: a tap on her toggles it; a tap anywhere else puts her back.
+ * Hits are tested against the cutout's alpha, sampled once into a small canvas,
+ * so the transparent corners around her never count as "on" her.
  */
 function useOverCutout(section: RefObject<HTMLElement | null>, img: RefObject<HTMLImageElement | null>) {
   const [over, setOver] = useState(false)
   useEffect(() => {
     const el = section.current
-    if (!el || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    if (!el) return
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches
     let mask: { data: Uint8ClampedArray; w: number; h: number } | null = null
     const build = () => {
       const im = img.current
@@ -62,8 +65,6 @@ function useOverCutout(section: RefObject<HTMLElement | null>, img: RefObject<HT
         mask = null
       }
     }
-    let raf = 0
-    let last = false
     const test = (x: number, y: number) => {
       const im = img.current
       if (!im) return false
@@ -75,24 +76,58 @@ function useOverCutout(section: RefObject<HTMLElement | null>, img: RefObject<HT
       const my = Math.min(mask.h - 1, Math.floor(((y - r.top) / r.height) * mask.h))
       return mask.data[(my * mask.w + mx) * 4 + 3] > 96
     }
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse') return
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(() => {
-        const now = test(e.clientX, e.clientY)
-        if (now !== last) setOver((last = now))
-      })
+    let last = false
+    const set = (v: boolean) => {
+      if (v !== last) setOver((last = v))
     }
-    const onLeave = () => {
-      cancelAnimationFrame(raf)
-      if (last) setOver((last = false))
+
+    if (canHover) {
+      let raf = 0
+      const onMove = (e: PointerEvent) => {
+        if (e.pointerType !== 'mouse') return
+        cancelAnimationFrame(raf)
+        raf = requestAnimationFrame(() => set(test(e.clientX, e.clientY)))
+      }
+      const onLeave = () => {
+        cancelAnimationFrame(raf)
+        set(false)
+      }
+      el.addEventListener('pointermove', onMove, { passive: true })
+      el.addEventListener('pointerleave', onLeave)
+      return () => {
+        cancelAnimationFrame(raf)
+        el.removeEventListener('pointermove', onMove)
+        el.removeEventListener('pointerleave', onLeave)
+      }
     }
-    el.addEventListener('pointermove', onMove, { passive: true })
-    el.addEventListener('pointerleave', onLeave)
+
+    // Touch: she steps forward on tap and settles back on her own after a
+    // moment, so the cover never gets stuck in the "over" state.
+    const HOLD_MS = 4000
+    let hold = 0
+    const setTouch = (v: boolean) => {
+      clearTimeout(hold)
+      set(v)
+      if (v) hold = window.setTimeout(() => set(false), HOLD_MS)
+    }
+    // "click" only fires for a real tap, never at the end of a scroll.
+    const onTap = (e: MouseEvent) => {
+      if ((e.target as Element | null)?.closest?.('a, button')) return
+      setTouch(test(e.clientX, e.clientY) ? !last : false)
+    }
+    // Tapping anywhere outside the cover, or scrolling it away, settles her back.
+    const onDocTap = (e: MouseEvent) => {
+      if (!el.contains(e.target as Node)) setTouch(false)
+    }
+    const io = new IntersectionObserver(([en]) => en.isIntersecting || setTouch(false))
+    io.observe(el)
+    el.addEventListener('click', onTap)
+    document.addEventListener('click', onDocTap)
     return () => {
-      cancelAnimationFrame(raf)
-      el.removeEventListener('pointermove', onMove)
-      el.removeEventListener('pointerleave', onLeave)
+      clearTimeout(hold)
+      io.disconnect()
+      el.removeEventListener('click', onTap)
+      document.removeEventListener('click', onDocTap)
     }
   }, [section, img])
   return over

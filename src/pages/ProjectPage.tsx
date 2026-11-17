@@ -76,14 +76,16 @@ export default function ProjectPage() {
           </Reveal>
         </div>
 
-        <div className="shell pb-[var(--section-y)]">
-          <h2 className="folio text-plum/70">From the work</h2>
-          <div className="mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {project.media.map((m, j) => (
-              <MediaFrame key={j} slot={m} n={j + 1} />
-            ))}
+        {project.media.length > 0 && (
+          <div className="shell pb-[var(--section-y)]">
+            <h2 className="folio text-plum/70">From the work</h2>
+            <div className="mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {project.media.map((m, j) => (
+                <MediaFrame key={j} slot={m} n={j + 1} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       <section className="bg-plum-deep text-cream">

@@ -5,7 +5,8 @@ import * as THREE from 'three'
 import type { Project } from '../types'
 import { loadImage } from '../lib/media'
 import {
-  paintClosingLeft, paintContactRight, paintCover, paintProjectLeft, paintProjectRight,
+  PH, PW, paintClosingLeft, paintContactRight, paintCover, paintProjectLeft, paintProjectRight,
+  type PageLink,
 } from './magazinePages'
 
 const W = 1.4
@@ -23,6 +24,10 @@ interface LeafDef {
   /** Project slug opened by tapping each side. */
   frontSlug?: string
   backSlug?: string
+  /** External links drawn on the front side (canvas px), opened instead of the story. */
+  frontLinks?: PageLink[]
+  /** Highlight front link i (-1: none). */
+  frontHover?: (i: number) => void
 }
 
 /** How far through the flip leaf i is, for scroll progress p (0..1). */
@@ -37,6 +42,15 @@ function spreadAt(p: number, leaves: number) {
   let k = 0
   for (let i = 0; i < leaves; i++) if (flipAmount(p, i, leaves) > 0.5) k = i + 1
   return k
+}
+
+/** Index of the link under a point on the front face (uv: 0..1, v up), or -1. */
+function linkIndexAt(links: PageLink[] | undefined, uv: THREE.Vector2) {
+  const x = uv.x * PW
+  const y = (1 - uv.y) * PH
+  // a little slack around each frame keeps them easy to hit on small screens
+  const pad = 14
+  return links?.findIndex((l) => x >= l.x - pad && x <= l.x + l.w + pad && y >= l.y - pad && y <= l.y + l.h + 60) ?? -1
 }
 
 function Leaf({
@@ -155,13 +169,26 @@ function Leaf({
           // Box material 4 is the front face, 5 the back; edges count as whichever side is up.
           const m = e.face?.materialIndex
           const front = m === 4 || (m !== 5 && flipAmount(scroll.get(), index, count) < 0.5)
+          const li = front && e.uv ? linkIndexAt(def.frontLinks, e.uv) : -1
+          if (li >= 0 && def.frontLinks) {
+            window.open(def.frontLinks[li].href, '_blank', 'noopener,noreferrer')
+            return
+          }
           const slug = front ? def.frontSlug : def.backSlug
           if (slug) onOpen(slug)
         }}
         onPointerOver={() => {
           if (def.frontSlug || def.backSlug) document.body.style.cursor = 'pointer'
         }}
-        onPointerOut={() => (document.body.style.cursor = '')}
+        onPointerMove={(e) => {
+          if (!def.frontHover) return
+          const onFront = e.face?.materialIndex === 4
+          def.frontHover(onFront && e.uv ? linkIndexAt(def.frontLinks, e.uv) : -1)
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = ''
+          def.frontHover?.(-1)
+        }}
       />
     </group>
   )
@@ -243,21 +270,33 @@ function useMagazine(projects: Project[], cutout: string, photoFor: Record<strin
       const photos = await Promise.all(
         projects.map((p) => (photoFor[p.slug] ? loadImage(photoFor[p.slug]).catch(() => undefined) : undefined)),
       )
+      // stills of each project's Instagram posts, for the contact sheet
+      const stills = await Promise.all(
+        projects.map((p) =>
+          Promise.all(
+            p.media.flatMap((m) =>
+              m.kind === 'instagram' ? [m.thumb ? loadImage(m.thumb).catch(() => undefined) : undefined] : [],
+            ),
+          ),
+        ),
+      )
       const lefts = projects.map((p, i) => paintProjectLeft(p, i, projects.length))
-      const rights = projects.map((p, i) => paintProjectRight(p, photos[i]))
+      const rights = projects.map((p, i) => paintProjectRight(p, photos[i], stills[i]))
       const closing = paintClosingLeft()
       const backBoard = paintContactRight(email, phone)
       const leaves: LeafDef[] = [{ front: cover, back: lefts[0], backSlug: projects[0].slug }]
       projects.forEach((p, i) => {
         const next = projects[i + 1]
         leaves.push({
-          front: rights[i],
+          front: rights[i].texture,
           frontSlug: p.slug,
+          frontLinks: rights[i].links,
+          frontHover: rights[i].links.length ? rights[i].hover : undefined,
           back: next ? lefts[i + 1] : closing,
           backSlug: next?.slug,
         })
       })
-      made.push(cover, ...lefts, ...rights, closing, backBoard)
+      made.push(cover, ...lefts, ...rights.map((r) => r.texture), closing, backBoard)
       if (alive) setState({ leaves, backBoard })
       else made.forEach((t) => t.dispose())
     })()

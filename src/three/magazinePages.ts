@@ -143,55 +143,137 @@ export function paintProjectLeft(p: Project, index: number, total: number) {
   return tex(c)
 }
 
-/** Right page of a spread: what she did, and a call to open the full story. */
-export function paintProjectRight(p: Project, photo?: HTMLImageElement) {
-  const { c, ctx } = canvas()
-  ctx.fillStyle = C.paper
-  ctx.fillRect(0, 0, PW, PH)
+/** A tappable spot on a page, in canvas pixels. */
+export interface PageLink {
+  href: string
+  x: number
+  y: number
+  w: number
+  h: number
+}
 
-  let y = 90
-  if (photo) {
-    drawCover(ctx, photo, 70, 70, PW - 140, 520, 0.25)
-    y = 660
-  } else {
-    // a framed "contact sheet" for work samples still to come
-    ctx.strokeStyle = C.plum
-    ctx.globalAlpha = 0.35
-    ctx.setLineDash([10, 10])
-    ctx.lineWidth = 2
-    for (let i = 0; i < 3; i++) ctx.strokeRect(70 + i * 260, 70, 240, 320)
-    ctx.setLineDash([])
-    ctx.globalAlpha = 1
-    ctx.font = 'italic 400 26px Fraunces'
-    ctx.fillStyle = C.plum
-    ctx.textAlign = 'center'
-    for (let i = 0; i < 3; i++) {
-      const slot = p.media[i]
-      const text = slot?.kind === 'placeholder' ? slot.label : 'Coming soon'
-      const lines = wrapLines(ctx, text, 200)
-      lines.forEach((l, j) => ctx.fillText(l, 190 + i * 260, 230 - ((lines.length - 1) * 17) + j * 34))
+/** A small play mark for reels, sat on the still itself. */
+function playMark(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.save()
+  ctx.beginPath()
+  ctx.arc(cx, cy, r, 0, Math.PI * 2)
+  ctx.fillStyle = 'rgba(28,16,40,0.45)'
+  ctx.fill()
+  ctx.strokeStyle = 'rgba(243,235,221,0.85)'
+  ctx.lineWidth = 2.5
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(cx - r * 0.3, cy - r * 0.45)
+  ctx.lineTo(cx + r * 0.5, cy)
+  ctx.lineTo(cx - r * 0.3, cy + r * 0.45)
+  ctx.closePath()
+  ctx.fillStyle = C.cream
+  ctx.fill()
+  ctx.restore()
+}
+
+/**
+ * One frame of the contact sheet: the post's still, mounted like a print,
+ * with a printed caption beneath. `hot` is the hover state.
+ */
+function contactFrame(
+  ctx: CanvasRenderingContext2D,
+  r: { x: number; y: number; w: number; h: number },
+  img: HTMLImageElement | undefined,
+  reel: boolean,
+  n: number,
+  hot: boolean,
+) {
+  const { x, y, w, h } = r
+  ctx.save()
+  ctx.shadowColor = hot ? 'rgba(36,20,52,0.32)' : 'rgba(36,20,52,0.16)'
+  ctx.shadowBlur = hot ? 34 : 18
+  ctx.shadowOffsetY = hot ? 14 : 8
+  ctx.fillStyle = reel ? C.ink : C.lavender
+  ctx.fillRect(x, y, w, h)
+  ctx.restore()
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(x, y, w, h)
+  ctx.clip()
+  if (img) {
+    // a slow push-in on hover, like leaning closer to the print
+    const z = hot ? 14 : 0
+    drawCover(ctx, img, x - z, y - z, w + z * 2, h + z * 2, reel ? 0.35 : 0)
+  }
+  ctx.restore()
+  if (reel) playMark(ctx, x + w / 2, y + h / 2, 30)
+  if (hot) {
+    ctx.strokeStyle = C.gold
+    ctx.lineWidth = 6
+    ctx.strokeRect(x + 3, y + 3, w - 6, h - 6)
+  }
+  // caption: a short gold rule, then FIG. n · POST ↗
+  ctx.fillStyle = C.gold
+  ctx.fillRect(x, y + h + 26, 22, 3)
+  label(ctx, `Fig. ${n} · ${reel ? 'Reel' : 'Post'} ↗`, x + 34, y + h + 34, hot ? C.deep : C.plum)
+}
+
+export interface RightPage {
+  texture: THREE.Texture
+  links: PageLink[]
+  /** Redraw with link i highlighted (-1 for none). */
+  hover: (i: number) => void
+}
+
+/**
+ * Right page of a spread: her work on Instagram as a contact sheet, what she
+ * did, and a call to open the full story. Projects without Instagram work
+ * show her photo if there is one, otherwise go straight to the text.
+ */
+export function paintProjectRight(
+  p: Project,
+  photo?: HTMLImageElement,
+  stills: (HTMLImageElement | undefined)[] = [],
+): RightPage {
+  const { c, ctx } = canvas()
+  const ig = p.media.flatMap((m) => (m.kind === 'instagram' ? [m.url] : [])).slice(0, 3)
+  const links: PageLink[] = ig.map((href, i) => ({ href, x: 70 + i * 260, y: 116, w: 240, h: 300 }))
+  const texture = tex(c)
+  let shown = -2
+
+  const draw = (hot: number) => {
+    if (hot === shown) return
+    shown = hot
+    ctx.fillStyle = C.paper
+    ctx.fillRect(0, 0, PW, PH)
+
+    let y = 90
+    if (links.length) {
+      label(ctx, 'On Instagram — tap a frame', 70, 86, C.plum)
+      links.forEach((r, i) => contactFrame(ctx, r, stills[i], r.href.includes('/reel/'), i + 1, i === hot))
+      y = 116 + 300 + 120
+    } else if (photo) {
+      drawCover(ctx, photo, 70, 70, PW - 140, 520, 0.25)
+      y = 660
     }
-    ctx.textAlign = 'left'
-    y = 470
+
+    ctx.font = 'italic 400 40px Fraunces'
+    ctx.fillStyle = C.plum
+    wrapLines(ctx, p.summary, PW - 140).forEach((l, i) => ctx.fillText(l, 70, y + i * 52))
+    y += wrapLines(ctx, p.summary, PW - 140).length * 52 + 50
+
+    ctx.font = '400 30px Fraunces'
+    ctx.fillStyle = C.ink
+    p.contributions.slice(0, 5).forEach((item, i) => {
+      ctx.fillStyle = C.gold
+      ctx.fillRect(70, y + i * 48 - 10, 14, 4)
+      ctx.fillStyle = C.ink
+      ctx.fillText(item, 100, y + i * 48)
+    })
+
+    label(ctx, 'Open the page to read the story', PW - 70, PH - 70, C.plum, 'right')
+    spineShade(ctx, 'right')
+    texture.needsUpdate = true
   }
 
-  ctx.font = 'italic 400 40px Fraunces'
-  ctx.fillStyle = C.plum
-  wrapLines(ctx, p.summary, PW - 140).forEach((l, i) => ctx.fillText(l, 70, y + i * 52))
-  y += wrapLines(ctx, p.summary, PW - 140).length * 52 + 50
-
-  ctx.font = '400 30px Fraunces'
-  ctx.fillStyle = C.ink
-  p.contributions.slice(0, 5).forEach((item, i) => {
-    ctx.fillStyle = C.gold
-    ctx.fillRect(70, y + i * 48 - 10, 14, 4)
-    ctx.fillStyle = C.ink
-    ctx.fillText(item, 100, y + i * 48)
-  })
-
-  label(ctx, 'Open the page to read the story', PW - 70, PH - 70, C.plum, 'right')
-  spineShade(ctx, 'right')
-  return tex(c)
+  draw(-1)
+  return { texture, links, hover: draw }
 }
 
 /** Closing spread, left: the sign-off. */
