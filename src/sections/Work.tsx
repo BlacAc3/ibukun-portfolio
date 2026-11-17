@@ -159,8 +159,11 @@ export function Work() {
       if (!el || touching) return
       const r = el.getBoundingClientRect()
       if (r.top > 0 || r.bottom < window.innerHeight) return
-      const u = scrollYProgress.get() * (LEAVES + 0.5)
-      const k = Math.max(0, Math.min(LEAVES, Math.round(u - 0.2)))
+      const p = scrollYProgress.get()
+      const u = p * (LEAVES + 0.5)
+      // Flip k runs from u = k + 0.25 to k + 0.85, so it is half-turned at
+      // k + 0.55: past that the page lands on the far side, short of it it falls back.
+      const k = spreadFor(p)
       const target = k === 0 ? 0 : k + 0.2
       if (Math.abs(u - target) > 0.04) go(k)
     }
