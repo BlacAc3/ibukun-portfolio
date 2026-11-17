@@ -1,0 +1,407 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-plum: #5a3b57;
+  --color-plum-deep: #2e1a2e;
+  --color-plum-ink: #1f1220;
+  --color-cream: #f3ebdd;
+  --color-paper: #faf5ec;
+  --color-latte: #efe2c8;
+  --color-lilac: #c9a9dd;
+  --color-lavender: #ede3f2;
+  --color-gold: #c9a24a;
+  --color-gold-soft: #e2c98a;
+
+  --font-display: 'Archivo', 'Arial Black', system-ui, sans-serif;
+  --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+
+  --ease-page: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-silk: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root {
+  /* One rhythm for every section: generous on desktop, still roomy on a phone. */
+  --gutter: clamp(1.25rem, 4.5vw, 3.5rem);
+  --section-y: clamp(5rem, 11vw, 9rem);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
+    scroll-padding-top: 6rem;
+  }
+  /* Without Lenis (reduced motion / touch-only), keep native smooth anchors. */
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html:not(.lenis) {
+      scroll-behavior: auto;
+    }
+  }
+  body {
+    background: var(--color-plum);
+    color: var(--color-cream);
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-plum-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  img {
+    display: block;
+    max-width: 100%;
+  }
+  /* three.js writes a pixel width onto <canvas>; keep it inside its box on resize */
+  canvas {
+    display: block;
+    max-width: 100% !important;
+  }
+}
+
+@layer components {
+  /* Heavy, wide caps — the type from her own cover */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-stretch: 125%;
+    font-variation-settings: 'wdth' 125;
+    line-height: 0.86;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  .display-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--color-cream);
+  }
+  @media (min-width: 640px) {
+    .display-outline {
+      -webkit-text-stroke-width: 1.5px;
+    }
+  }
+  .kicker {
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .heading {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 112%;
+    font-variation-settings: 'wdth' 112;
+    line-height: 1;
+    letter-spacing: -0.015em;
+  }
+  /* Large editorial serif — italics carry the voice, caps carry the brand */
+  .serif-lede {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    font-variation-settings: 'opsz' 144;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+  }
+
+  .shell {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 82rem;
+    padding-inline: var(--gutter);
+  }
+  .section {
+    padding-block: var(--section-y);
+  }
+
+  /* Section folio: "02 — About", like a running header in a magazine */
+  .folio {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .folio::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: currentColor;
+    opacity: 0.22;
+  }
+  .folio b {
+    font-weight: 800;
+    color: var(--folio-accent, var(--color-gold));
+  }
+
+  /* Buttons: thumb-sized, quiet until touched */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    border-radius: 999px;
+    padding: 0.8rem 1.5rem;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition:
+      background-color 0.5s var(--ease-page),
+      color 0.5s var(--ease-page),
+      border-color 0.5s var(--ease-page),
+      transform 0.5s var(--ease-page);
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn .arrow {
+    transition: transform 0.5s var(--ease-page);
+  }
+  .btn:hover .arrow {
+    transform: translateX(4px);
+  }
+  .btn-gold {
+    background: var(--color-gold-soft);
+    color: var(--color-plum-ink);
+  }
+  .btn-gold:hover {
+    background: var(--color-cream);
+  }
+  .btn-line {
+    border: 1px solid color-mix(in oklab, currentColor 35%, transparent);
+  }
+  .btn-line:hover {
+    border-color: var(--color-gold-soft);
+    color: var(--color-gold-soft);
+  }
+  .btn-ink {
+    background: var(--color-plum-ink);
+    color: var(--color-cream);
+  }
+  .btn-ink:hover {
+    background: var(--color-plum);
+  }
+
+  /* Underline that draws in from the left */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.6s var(--ease-page);
+    padding-bottom: 0.1em;
+  }
+  .link-draw:hover,
+  .link-draw:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  .prose-mag p + p {
+    margin-top: 1.1em;
+  }
+  .dropcap::first-letter {
+    float: left;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-variation-settings: 'wdth' 125;
+    font-size: 3.6em;
+    line-height: 0.8;
+    padding: 0.06em 0.12em 0 0;
+    color: var(--color-plum);
+  }
+  @media (min-width: 640px) {
+    .dropcap::first-letter {
+      font-size: 4.6em;
+    }
+  }
+}
+
+/* Ticker of her titles between the cover and the first page */
+@keyframes ticker {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.ticker-track {
+  animation: ticker 38s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* Slow scroll cue under the cover */
+@keyframes cue {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  45% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  55% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+.cue-line {
+  animation: cue 2.4s var(--ease-silk) infinite;
+}
+
+/* Vintage finish over everything: fine film grain that flickers like stock,
+   a faint warm cast, and a soft lens vignette. Kept just under noticing. */
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: -12%;
+  z-index: 60;
+  opacity: 0.12;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1.5 -0.25'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grain-flicker 0.9s steps(6) infinite;
+  will-change: transform;
+}
+@keyframes grain-flicker {
+  0% { transform: translate3d(0, 0, 0); }
+  17% { transform: translate3d(-4%, 3%, 0); }
+  33% { transform: translate3d(3%, -5%, 0); }
+  50% { transform: translate3d(-6%, -2%, 0); }
+  67% { transform: translate3d(5%, 4%, 0); }
+  83% { transform: translate3d(-2%, 6%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grain {
+    animation: none;
+  }
+}
+@media (max-width: 640px) {
+  .grain {
+    opacity: 0.1;
+  }
+}
+.vintage {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  background:
+    radial-gradient(ellipse 120% 95% at 50% 45%, transparent 58%, rgba(31, 18, 32, 0.2) 100%),
+    linear-gradient(rgba(226, 190, 128, 0.05), rgba(226, 190, 128, 0.05));
+  mix-blend-mode: multiply;
+}
+
+
+/* Page switches and long jumps pass through a shallow plum veil instead of
+   scrolling past the magazine. No panel, no label: the field settles in from a
+   hair wider than the viewport, a low gold bloom warms the centre, then the
+   whole veil lifts away. Transform + opacity only. */
+.page-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(1.055);
+  transform-origin: 50% 50%;
+  background:
+    linear-gradient(180deg, rgba(243, 235, 221, 0.035), rgba(243, 235, 221, 0) 38%),
+    radial-gradient(ellipse 132% 100% at 50% 40%,
+      #3b2440 0%,
+      var(--color-plum-deep) 58%,
+      #241526 100%);
+  will-change: opacity, transform;
+}
+/* The veil carries its own faint grain so the dark field never reads as flat
+   digital fill — it stays part of the printed page. */
+.page-fade::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1.5 -0.25'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+}
+/* Warm bloom — arrives just behind the fill so the cover reads as light
+   dimming rather than a flat wipe. */
+.page-fade::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 62% 48% at 50% 46%,
+    rgba(201, 162, 74, 0.14),
+    transparent 72%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-page);
+}
+.page-fade[data-state='in'] {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.34s var(--ease-silk),
+    transform 0.56s var(--ease-silk);
+}
+.page-fade[data-state='in']::after {
+  opacity: 1;
+  transition-delay: 0.1s;
+}
+.page-fade[data-state='cover'] {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+  transform: scale(1);
+}
+.page-fade[data-state='out'] {
+  visibility: visible;
+  opacity: 0;
+  transform: scale(1.018);
+  transition:
+    opacity 0.62s var(--ease-page),
+    transform 0.8s var(--ease-page);
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-fade,
+  .page-fade[data-state='in'],
+  .page-fade[data-state='cover'],
+  .page-fade[data-state='out'] {
+    transform: none;
+  }
+}
